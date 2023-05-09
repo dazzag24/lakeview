@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Any
 
 from werkzeug.exceptions import HTTPException
 from flask import Blueprint, render_template, request, jsonify
@@ -6,6 +6,7 @@ from flask_caching import Cache
 
 import loader
 from du import size_for, diff_for
+from duplicates import duplicates_for
 from view import wants_json
 
 
@@ -26,6 +27,7 @@ class AthenaController(object):
         bp = Blueprint('athena_controllers', __name__)
         bp.route('/')(self.index_handler)
         bp.route('/du')(self.du_handler)
+        bp.route('/duplicates')(self.duplicates_handler)
         bp.errorhandler(HTTPException)(error_handler)
         return bp
 
@@ -75,6 +77,30 @@ class AthenaController(object):
             compare_with_date=compare_with_date,
             response=res,
             available_dates=reversed(self._enumerate_dates())
+        )
+ 
+    def duplicates_handler(self):
+        """
+        Find the duplicate files based on the etag (MD5 checksum)
+        """
+        date = request.args.get('date')
+        cache_key = f'duplicates:{date}'
+        res = self.cache.get(cache_key)
+        if not res:
+            res = duplicates_for(self.db, date)
+            self.cache.set(cache_key, res)
+
+        if wants_json(request):
+            json_kwargs = {
+                'date': date,
+                'response': res,
+            }
+            return jsonify(**json_kwargs)
+
+        return render_template(
+            'duplicates.html',
+            date=date,
+            response=res,
         )
 
     def _enumerate_dates(self) -> List[str]:
