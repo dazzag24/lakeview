@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h3>
+    Duplicates
+</h3>
+
+<hr/>
+
+<table class="table">
+    <thead>
+    <tr>
+        <th>eTag (MD5 Checksum)</th>
+        <th>Duplicate Files</th>
+        <th>Number of Duplicates</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for row in response %}
+    <tr>
+        <td title="{{row['e_tag']}}">
+            {{row['e_tag']}}
+        </td>
+        <td>
+        {% for line in row['files'] %}
+            <a href="https://s3.console.aws.amazon.com/s3/object/qur8ml-datasets?region=eu-west-2&prefix={{line}}">{{ line }}<br /></a>
+        {% endfor %}
+        </td>
+        <td title="{{row['num_dups']}}">
+            {{row['num_dups']}}
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

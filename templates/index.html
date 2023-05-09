@@ -5,6 +5,7 @@
         {% for date in dates %}
         <tr>
             <td><a href="/du?date={{date}}&delimiter=/&prefix=" data-query="true">{{date}}</a></td>
+            <td><a href="/duplicates?date={{date}}" data-query="true">Find duplicates</a></td>
         </tr>
         {% endfor %}
     </table>
